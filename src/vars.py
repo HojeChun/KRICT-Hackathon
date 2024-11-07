@@ -9,7 +9,7 @@ KEY_TARGET = "value_per_atom"
 FP_PREFIX = "num_"
 
 # Fingerprint vector size
-FP_SIZE = 54
+FP_SIZE = 64
 
 # Atomic mass dictionary: Element name as key, atomic mass as value
 ATOMIC_MASS = {

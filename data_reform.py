@@ -22,7 +22,7 @@ df_parsed = parse_rawdata(df_rawdata, "structure")
 # Convert element type and number to bins, and get total mass in "mass" column
 # Mass vector size (-8: 7 for crystal systems, 1 for density)
 n_mass_bins = FP_SIZE - 8
-df_parsed = elements_to_bin(df_parsed, "element", n_bins=n_mass_bins)
+df_parsed = elements_to_bin(df_parsed, "element", "natoms", n_bins=n_mass_bins)
 
 # Compute density
 # 1. Extract lattice parameters from the new column "data"
@@ -31,7 +31,7 @@ df_parsed = extract_structure(df_parsed, "data")
 df_parsed = rescale_lattice_vector(df_parsed, scaler=1e10)
 # 3. Compute volume and density
 df_parsed = get_volume(df_parsed)
-df_parsed = get_density(df_parsed, mass="num_mass_total", volume="num_volume")
+df_parsed = get_density(df_parsed, mass="mass_total", volume="volume")
 
 # Get crystal system
 df_parsed = get_crystal_system(df_parsed, "space_group")

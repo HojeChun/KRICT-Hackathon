@@ -54,8 +54,8 @@ def parse_rawdata(df, json_column, drop_original=False):
     # Concatenate the new columns to the original DataFrame
     df = pd.concat([df, json_cols], axis=1)
     # Rename natoms to num_natoms
-    if "natoms" in df:
-        df = df.rename(columns={"natoms": "num_natoms"})
+    # if "natoms" in df:
+    #     df = df.rename(columns={"natoms": "num_natoms"})
     # Drop original columns if requested
     if drop_original:
         df = df.drop(columns=[json_column])
@@ -105,7 +105,7 @@ def get_crystal_system(df, key="space_group"):
     return df
 
 
-def elements_to_bin(df, key, n_bins=56):
+def elements_to_bin(df, key, key_natoms, n_bins=56):
     """Convert elements information into generalized binned vector
     And add a mass (total mass)"""
     # Initialize mass bins
@@ -123,7 +123,12 @@ def elements_to_bin(df, key, n_bins=56):
             )
             df.at[index, str(mass_bin)] = row[mass_bin] + elements[element]
             mass_total = mass_total + ATOMIC_MASS[element]
-        df.at[index, "num_mass_total"] = mass_total
+        df.at[index, "mass_total"] = mass_total
+
+    # Normalize using the total number of atoms
+    # VERY IMPORTANT !!!
+    for i in range(n_bins):
+        df[f"{FP_PREFIX}mass_{i}"] = df[f"{FP_PREFIX}mass_{i}"] / df[key_natoms]
 
     return df
 
@@ -141,12 +146,12 @@ def get_volume(df):
         volume = np.abs(np.dot(a, cross_product))
 
         # Add volume to the df
-        df.at[index, "num_volume"] = volume
+        df.at[index, "volume"] = volume
 
     return df
 
 
-def get_density(df, mass="num_mass_total", volume="num_volume"):
+def get_density(df, mass="mass_total", volume="volume"):
     for index, row in df.iterrows():
         df.at[index, f"{FP_PREFIX}density"] = row[mass] / row[volume]
 

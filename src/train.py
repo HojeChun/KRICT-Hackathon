@@ -18,7 +18,7 @@ class ProcessedDataDataset(Dataset):
         data_id = self.data_keys[idx]
         sample = self.data[data_id]
 
-        descriptor = torch.mean(torch.tensor(sample["descriptor"], dtype=torch.float32), dim=0)
+        descriptor = torch.tensor(sample["descriptor"], dtype=torch.float32)
         descriptor_2 = torch.tensor(sample['descriptor_2'], dtype=torch.float32)
         natoms = torch.tensor(sample["natoms"], dtype=torch.int)
         value_per_atom = torch.tensor([sample["value_per_atom"]], dtype=torch.float32)
