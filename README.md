@@ -7,4 +7,3 @@ conda activate krict
 [pytorch](https://pytorch.org/)
 
 [mace](https://github.com/ACEsuit/mace)
-change
