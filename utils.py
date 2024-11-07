@@ -22,7 +22,7 @@ class ProcessedDataDataset(Dataset):
         descriptor_2 = torch.tensor(sample['descriptor_2'], dtype=torch.float32)
         natoms = torch.tensor(sample["natoms"], dtype=torch.int)
         value_per_atom = torch.tensor([sample["value_per_atom"]], dtype=torch.float32)
-        value = torch.tensor([sample["value"]], dtype=torch.float32)
+        # value = torch.tensor([sample["value"]], dtype=torch.float32)
 
         # Exclude atoms from the returned dictionary
         return {
@@ -31,7 +31,7 @@ class ProcessedDataDataset(Dataset):
             "descriptor_2": descriptor_2,
             "natoms": natoms,
             "value_per_atom": value_per_atom,
-            "value": value
+            # "value": value
         }
 
 
@@ -86,8 +86,8 @@ class Model(nn.Module):
             nn.ReLU(),
             nn.Linear(n_dimensions, 1)
         )
-        self.mean = torch.register_buffer('mean', torch.tensor(mean), dtype=torch.float32)
-        self.std = torch.register_buffer('std', torch.tensor(std), dtype=torch.float32)
+        self.register_buffer('mean', torch.tensor(mean, dtype=torch.float32))
+        self.register_buffer('std', torch.tensor(std, dtype=torch.float32))
 
     def forward(self, descriptor):
         emb = self.mlp_emb(descriptor)
@@ -110,8 +110,8 @@ class Model2(nn.Module):
             nn.ReLU(),
             nn.Linear(n_dimensions, 1)
         )
-        self.mean = torch.register_buffer('mean', torch.tensor(mean), dtype=torch.float32)
-        self.std = torch.register_buffer('std', torch.tensor(std), dtype=torch.float32)
+        self.register_buffer('mean', torch.tensor(mean, dtype=torch.float32))
+        self.register_buffer('std', torch.tensor(std, dtype=torch.float32))
 
     def forward(self, descriptor):
         # emb = self.mlp_emb(descriptor)
@@ -123,12 +123,8 @@ class Model2(nn.Module):
 
 
 class Trainer:
-    def __init__(self, model, train_loader, val_loader, criterion, optimizer, device='cpu'):
-        if isinstance(model, Model):
-            self.input_key = "descriptor"
-        elif isinstance(model, Model2):
-            self.input_key = "descriptor_2"
-
+    def __init__(self, model, input_key, train_loader, val_loader, criterion, optimizer, device='cpu'):
+        self.input_key = input_key
         self.model = model.to(device)
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -181,11 +177,7 @@ class Trainer:
         return avg_loss
 
 
-def evaluate(model, test_loader, device):
-    if isinstance(model, Model):
-        input_key = "descriptor"
-    elif isinstance(model, Model2):
-        input_key = "descriptor_2"
+def evaluate(model, input_key, test_loader, device):
     model.eval()
     pred_list = []
     targ_list = []
