@@ -70,7 +70,7 @@ def train_val_test_split_indices(dataset, train_size=0.7, val_size=0.15, test_si
 
 
 class Model(nn.Module):
-    def __init__(self, feat_dim=256, n_emb=64, n_dimensions=64):
+    def __init__(self, feat_dim=256, n_emb=64, n_dimensions=64, mean: float = 0.0, std: float = 1.0):
         super().__init__()
         self.mlp_emb = nn.Sequential(
             nn.Linear(feat_dim, n_dimensions),
@@ -86,14 +86,19 @@ class Model(nn.Module):
             nn.ReLU(),
             nn.Linear(n_dimensions, 1)
         )
+        self.mean = torch.register_buffer('mean', torch.tensor(mean), dtype=torch.float32)
+        self.std = torch.register_buffer('std', torch.tensor(std), dtype=torch.float32)
 
     def forward(self, descriptor):
         emb = self.mlp_emb(descriptor)
         output = self.mlp_fit(emb)
+        self.mean = self.mean.to(descriptor.device)
+        self.std = self.std.to(descriptor.device)
+        output = output * self.std + self.mean
         return output
 
 class Model2(nn.Module):
-    def __init__(self, n_emb=64, n_dimensions=64):
+    def __init__(self, n_emb=64, n_dimensions=64, mean: float = 0.0, std: float = 1.0):
         super().__init__()
 
         self.mlp_fit = nn.Sequential(
@@ -105,10 +110,15 @@ class Model2(nn.Module):
             nn.ReLU(),
             nn.Linear(n_dimensions, 1)
         )
+        self.mean = torch.register_buffer('mean', torch.tensor(mean), dtype=torch.float32)
+        self.std = torch.register_buffer('std', torch.tensor(std), dtype=torch.float32)
 
     def forward(self, descriptor):
         # emb = self.mlp_emb(descriptor)
         output = self.mlp_fit(descriptor)
+        self.mean = self.mean.to(descriptor.device)
+        self.std = self.std.to(descriptor.device)
+        output = output * self.std + self.mean
         return output
 
 
